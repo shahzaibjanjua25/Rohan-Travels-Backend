@@ -1,0 +1,58 @@
+const mongoose = require('mongoose');
+
+const config = require('./src/config/env'); // loads and validates .env first
+const connectDB = require('./src/config/db');
+const app = require('./src/app');
+
+let server;
+
+/**
+ * Connect to Mongo *before* listening. Accepting traffic while the database is
+ * still unreachable produces a wave of 500s that look like application bugs.
+ */
+const start = async () => {
+  await connectDB();
+
+  server = app.listen(config.port, () => {
+    console.log(`[server] Running in ${config.env} mode on port ${config.port}`);
+    console.log(`[server] Health check: http://localhost:${config.port}/api/health`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[server] Port ${config.port} is already in use.`);
+      console.error('[server] Change PORT in .env, or free the port:');
+      console.error(`         macOS/Linux  lsof -ti:${config.port} | xargs kill -9`);
+      console.error(`         Windows      netstat -ano | findstr :${config.port}`);
+      process.exit(1);
+    }
+    throw err;
+  });
+};
+
+const shutdown = async (signal) => {
+  console.log(`\n[server] ${signal} received, shutting down...`);
+  if (server) await new Promise((resolve) => server.close(resolve));
+  await mongoose.connection.close(false);
+  console.log('[server] Closed cleanly');
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] Unhandled rejection:', reason);
+  if (server) server.close(() => process.exit(1));
+  else process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught exception:', err);
+  process.exit(1);
+});
+
+start().catch((err) => {
+  console.error('[server] Failed to start:', err.message);
+  process.exit(1);
+});
