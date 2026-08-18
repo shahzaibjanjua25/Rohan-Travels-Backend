@@ -344,4 +344,4 @@ exports.getUserName = catchAsync(async (req, res) => {
     name: user.name,
     email: user.email,
   });
-});
+}); 
