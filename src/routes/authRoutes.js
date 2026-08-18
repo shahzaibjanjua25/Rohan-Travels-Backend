@@ -37,6 +37,7 @@ router.post('/request-otp', authController.requestOTP);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/get-user-name', authController.getUserName);
 
+
 // Get CSRF token
 router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);
 

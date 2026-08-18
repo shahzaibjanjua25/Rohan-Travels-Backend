@@ -256,13 +256,16 @@ exports.requestOTP = catchAsync(async (req, res) => {
     attempts: 0,
   });
 
-  // Return the OTP in development for testing
+  // Return the OTP in development for testing, but NOT in production
+  const isDev = process.env.NODE_ENV === 'development';
+
   res.status(200).json({
     success: true,
     message: 'OTP generated successfully.',
-    ...(process.env.NODE_ENV === 'development' && { otp: otpCode }),
+    ...(isDev && { otp: otpCode }),
   });
 });
+
 
 /**
  * POST /api/auth/verify-otp
