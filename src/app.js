@@ -25,9 +25,14 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow tools with no Origin header (curl, Postman, health checks).
+      console.log('🔴 CORS Request from origin:', origin);
+      console.log('🔴 Allowed origins:', config.corsOrigins);
       if (!origin) return callback(null, true);
-      if (config.corsOrigins.includes(origin)) return callback(null, true);
+      if (config.corsOrigins.includes(origin)) {
+        console.log('✅ Origin allowed:', origin);
+        return callback(null, true);
+      }
+      console.log('❌ Origin blocked:', origin);
       return callback(AppError.forbidden(`Origin not allowed by CORS: ${origin}`));
     },
     credentials: true,
