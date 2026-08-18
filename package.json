@@ -11,9 +11,12 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "build": "echo 'No build step required for backend API'",
+    "vercel-build": "echo 'Vercel build step completed'",
     "seed": "node src/seeders/index.js",
     "seed:admin": "node src/seeders/adminSeeder.js",
     "seed:flights": "node src/seeders/flightSeeder.js",
+    "seed:ledger": "node src/seeders/seedLeger.js",
     "test:integration": "node tests/auth.integration.js && node tests/flights.integration.js && node tests/bookings.integration.js && node tests/reporting.integration.js && node tests/users.integration.js",
     "test:auth": "node tests/auth.integration.js",
     "test:flights": "node tests/flights.integration.js",
