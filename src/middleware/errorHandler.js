@@ -50,6 +50,7 @@ const errorHandler = (err, req, res, next) => {
   };
 
   if (error.details) body.details = error.details;
+  if (error.code) body.code = error.code;
   if (!config.isProd) body.stack = err.stack;
 
   res.status(statusCode).json(body);

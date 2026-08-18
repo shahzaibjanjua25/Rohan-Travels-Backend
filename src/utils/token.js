@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/env');
+const { writeCookie, clearCookie } = require('./cookies');
+
 
 const signAccessToken = (user) =>
   jwt.sign({ sub: String(user._id), role: user.role }, config.jwt.secret, {
@@ -16,24 +18,15 @@ const verifyAccessToken = (token) => jwt.verify(token, config.jwt.secret);
  * cross-site requests, which is what SameSite defends against.
  */
 const setAuthCookie = (res, token) => {
-  res.cookie(config.cookie.name, token, {
+  writeCookie(res, config.cookie.name, token, {
     httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: config.cookie.sameSite,
-    domain: config.cookie.domain,
-    path: '/',
     maxAge: parseExpiry(config.jwt.expiresIn),
+    path: '/',
   });
 };
 
 const clearAuthCookie = (res) => {
-  res.clearCookie(config.cookie.name, {
-    httpOnly: true,
-    secure: config.cookie.secure,
-    sameSite: config.cookie.sameSite,
-    domain: config.cookie.domain,
-    path: '/',
-  });
+  clearCookie(res, config.cookie.name, { path: '/' });
 };
 
 /** '1d' | '30m' | '900s' -> milliseconds. Keeps cookie and JWT lifetimes aligned. */

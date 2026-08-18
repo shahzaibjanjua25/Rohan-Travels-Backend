@@ -17,7 +17,7 @@ const missing = REQUIRED.filter((key) => !process.env[key] || !process.env[key].
 if (missing.length) {
   console.error(
     `\n[config] Missing required environment variable(s): ${missing.join(', ')}\n` +
-      `[config] Copy backend/.env to backend/.env and fill them in.\n`
+    `[config] Copy backend/.env to backend/.env and fill them in.\n`
   );
   process.exit(1);
 }
@@ -27,7 +27,11 @@ if (process.env.JWT_SECRET.length < 32) {
   console.error('  node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"\n');
   process.exit(1);
 }
-
+// after the JWT_SECRET length check
+if (process.env.CSRF_SECRET && process.env.CSRF_SECRET.length < 32) {
+  console.error('\n[config] CSRF_SECRET must be at least 32 characters.\n');
+  process.exit(1);
+}
 const toInt = (value, fallback) => {
   const n = Number.parseInt(value, 10);
   return Number.isFinite(n) ? n : fallback;

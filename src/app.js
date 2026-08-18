@@ -21,32 +21,27 @@ app.set('trust proxy', 1);
 
 // --- CORS Configuration - MUST BE FIRST ---
 // ✅ Allow both production and local development
-const allowedOrigins = [
-  'https://rohantravels-frontend.vercel.app',
-  'https://rohan-travels-frontend.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-];
+const allowedOrigins = config.corsOrigins;   // from CORS_ORIGINS
+
+const originAllowed = (origin) =>
+  allowedOrigins.some((pattern) => {
+    if (pattern === origin) return true;
+    if (!pattern.includes('*')) return false;
+    const rx = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^.]+');
+    return new RegExp(`^${rx}$`).test(origin);
+  });
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
+    origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      
-      // Check if the origin is allowed
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        console.warn('❌ CORS blocked origin:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
+      if (originAllowed(origin)) return callback(null, true);
+      console.warn('[cors] blocked origin:', origin);
+      return callback(null, false);   // <- false, not an Error
     },
-    credentials: true, // ✅ REQUIRED for cookies
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Accept'],
-    exposedHeaders: ['Set-Cookie'],
-    preflightContinue: false,
     optionsSuccessStatus: 204,
   })
 );
@@ -71,7 +66,7 @@ app.use(mongoSanitize());
 app.use(hpp({ whitelist: ['status', 'airline', 'origin', 'destination'] }));
 
 // CSRF must sit after cookieParser and before any route that mutates state.
-app.use(ensureCsrfToken);
+// app.use(ensureCsrfToken);
 app.use(verifyCsrf);
 
 app.use(compression());
@@ -95,7 +90,17 @@ app.get('/api/debug-cookie-config', (req, res) => {
     }
   });
 });
+// backend/src/app.js
 
+app.get('/api/debug-csrf', (req, res) => {
+  const csrfToken = req.cookies?.rt_csrf || null;
+  res.json({
+    csrfCookie: csrfToken,
+    allCookies: req.cookies,
+    secure: config.cookie.secure,
+    sameSite: config.cookie.sameSite,
+  });
+});
 // ============================================
 // IMPORT ROUTES
 // ============================================

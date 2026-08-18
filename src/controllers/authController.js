@@ -9,6 +9,9 @@ const { signAccessToken, setAuthCookie, clearAuthCookie } = require('../utils/to
 const { issueToken: issueCsrfToken, CSRF_COOKIE } = require('../middleware/csrf');
 const { sendEmail } = require('../config/email');
 const config = require('../config/env');
+const { ensureCsrfToken } = require('../middleware/csrf');
+const { clearCookie } = require('../utils/cookies');
+
 
 /**
  * A valid bcrypt hash of a value nobody will guess.
@@ -77,7 +80,7 @@ exports.login = catchAsync(async (req, res) => {
  */
 exports.logout = (req, res) => {
   clearAuthCookie(res);
-  res.clearCookie(CSRF_COOKIE, { path: '/' });
+  clearCookie(res, CSRF_COOKIE, { path: '/' });
   res.status(200).json({ success: true, message: 'Logged out' });
 };
 
@@ -189,25 +192,12 @@ exports.resetPassword = catchAsync(async (req, res) => {
  * Always returns the current CSRF token and sets the cookie
  */
 exports.getCsrfToken = (req, res) => {
-  // Get the token from the cookie or issue a new one
-  let token = req.cookies?.[CSRF_COOKIE];
-
-  if (!token) {
-    // Issue a new token
-    token = issueCsrfToken(res);
-  } else {
-    // Refresh the cookie with explicit settings
-    // Use the same issueToken function to set the cookie correctly
-    token = issueCsrfToken(res);
-  }
-
-  // Return token in response body AND set cookie
   res.status(200).json({
     success: true,
-    csrfToken: token,
-    message: 'CSRF token ready'
+    csrfToken: res.locals.csrfToken,   // set by ensureCsrfToken
   });
 };
+router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);
 // ============================================
 // OTP METHODS
 // ============================================
