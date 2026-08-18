@@ -85,6 +85,7 @@ const config = {
   // a security control that switches itself off in the test environment is a
   // control nothing ever verifies.
   csrfEnabled: toBool(process.env.CSRF_ENABLED, true),
+  csrfSecret: process.env.CSRF_SECRET,
 
   cookie: {
     name: process.env.COOKIE_NAME || 'rt_token',
