@@ -24,19 +24,10 @@ app.use(helmet());
 // backend/src/app.js
 app.use(
   cors({
-    origin(origin, callback) {
-      console.log('🔴 CORS Request from origin:', origin);
-      console.log('🔴 Allowed origins:', config.corsOrigins);
-      if (!origin) return callback(null, true);
-      if (config.corsOrigins.includes(origin)) {
-        console.log('✅ Origin allowed:', origin);
-        return callback(null, true);
-      }
-      console.log('❌ Origin blocked:', origin);
-      return callback(AppError.forbidden(`Origin not allowed by CORS: ${origin}`));
-    },
+    origin: ['https://rohantravels-frontend.vercel.app', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
   })
 );
 
