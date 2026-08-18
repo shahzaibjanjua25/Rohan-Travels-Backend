@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const { ensureCsrfToken } = require('../middleware/csrf');
+
 const {
   registerRules,
   loginRules,
@@ -36,7 +38,8 @@ router.post('/verify-otp', authController.verifyOTP);
 router.post('/get-user-name', authController.getUserName);
 
 // Get CSRF token
-router.get('/csrf', authController.getCsrfToken);
+router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);
+
 
 // ============================================
 // PROTECTED ROUTES (require authentication)

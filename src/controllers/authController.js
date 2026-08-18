@@ -197,7 +197,7 @@ exports.getCsrfToken = (req, res) => {
     csrfToken: res.locals.csrfToken,   // set by ensureCsrfToken
   });
 };
-router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);
+// router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);
 // ============================================
 // OTP METHODS
 // ============================================
