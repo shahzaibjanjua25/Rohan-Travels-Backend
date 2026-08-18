@@ -25,14 +25,33 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 const issueToken = (res) => {
   const token = crypto.randomBytes(32).toString('hex');
-  res.cookie(CSRF_COOKIE, token, {
-    httpOnly: false, // must be readable by the frontend — that is the point
+  console.log('🔄 issueToken called, setting cookie with:', {
     secure: config.cookie.secure,
     sameSite: config.cookie.sameSite,
     domain: config.cookie.domain,
+    token: token.substring(0, 10) + '...'
+  });
+  res.cookie(CSRF_COOKIE, token, {
+    httpOnly: false,
+    secure: true,  // Force true
+    sameSite: 'none',  // Force none
+    domain: undefined,
     path: '/',
   });
+  console.log('✅ Cookie set with token:', token.substring(0, 10) + '...');
   return token;
+};
+
+
+const ensureCsrfToken = (req, res, next) => {
+  console.log('🔄 ensureCsrfToken called, cookie exists?', !!req.cookies?.[CSRF_COOKIE]);
+  if (!req.cookies?.[CSRF_COOKIE]) {
+    console.log('🔄 No CSRF cookie found, issuing new token');
+    issueToken(res);
+  } else {
+    console.log('🔄 CSRF cookie already exists');
+  }
+  next();
 };
 
 /** Ensure every client holds a CSRF token before it needs one. */

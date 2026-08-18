@@ -21,7 +21,7 @@ app.set('trust proxy', 1);
 
 // --- Security --------------------------------------------------------------
 app.use(helmet());
-
+// backend/src/app.js
 app.use(
   cors({
     origin(origin, callback) {
@@ -69,13 +69,16 @@ app.use(compression());
 if (!config.isProd) app.use(morgan('dev'));
 
 // --- Health check ----------------------------------------------------------
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: 'ok',
-    env: config.env,
-    uptime: Math.round(process.uptime()),
-    timestamp: new Date().toISOString(),
+// Add this temporarily to debug cookie config
+app.get('/api/debug-cookie-config', (req, res) => {
+  res.json({
+    cookie: config.cookie,
+    csrfEnabled: config.csrfEnabled,
+    env: {
+      COOKIE_SECURE: process.env.COOKIE_SECURE,
+      COOKIE_SAMESITE: process.env.COOKIE_SAMESITE,
+      CSRF_ENABLED: process.env.CSRF_ENABLED,
+    }
   });
 });
 
