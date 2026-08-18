@@ -1,8 +1,11 @@
-//require('dotenv').config({ path: './.env' });
+// backend/server.js
 require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 
-const mongoose = require('mongoose');
+const dns = require('dns');
+// Force Node.js to use system DNS resolver
+dns.setDefaultResultOrder('ipv4first');
 
+const mongoose = require('mongoose');
 const config = require('./src/config/env');
 const connectDB = require('./src/config/db');
 const app = require('./src/app');
