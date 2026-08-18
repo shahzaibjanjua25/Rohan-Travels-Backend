@@ -7,6 +7,8 @@ const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const { signAccessToken, setAuthCookie, clearAuthCookie } = require('../utils/token');
 const { issueToken: issueCsrfToken, CSRF_COOKIE } = require('../middleware/csrf');
+const { issueToken, CSRF_COOKIE } = require('../middleware/csrf');
+
 const { sendEmail } = require('../config/email');
 const config = require('../config/env');
 
@@ -181,8 +183,18 @@ exports.resetPassword = catchAsync(async (req, res) => {
  * GET /api/auth/csrf
  */
 exports.getCsrfToken = (req, res) => {
-  res.status(200).json({ success: true, message: 'CSRF cookie set' });
+  let token = req.cookies?.[CSRF_COOKIE];
+  if (!token) {
+    token = issueToken(res);
+  }
+  // Return token in both cookie AND response body
+  res.status(200).json({
+    success: true,
+    csrfToken: token,
+    message: 'CSRF token set'
+  });
 };
+
 
 // ============================================
 // OTP METHODS
@@ -233,7 +245,7 @@ exports.requestOTP = catchAsync(async (req, res) => {
 
   // Store OTP in database - delete any existing OTPs for this email/type
   await OTP.deleteMany({ email: email.toLowerCase(), type });
-  
+
   await OTP.create({
     email: email.toLowerCase(),
     otp: hashedOTP,
@@ -279,7 +291,7 @@ exports.verifyOTP = catchAsync(async (req, res) => {
       type,
       isUsed: false,
     });
-    
+
     if (latest) {
       latest.attempts += 1;
       if (latest.attempts >= 5) {
