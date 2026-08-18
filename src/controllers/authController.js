@@ -181,19 +181,33 @@ exports.resetPassword = catchAsync(async (req, res) => {
  * GET /api/auth/csrf
  * ✅ FIXED: Use issueCsrfToken instead of issueToken
  */
+// backend/src/controllers/authController.js
+// ... other imports
+
+/**
+ * GET /api/auth/csrf
+ * Always returns the current CSRF token and sets the cookie
+ */
 exports.getCsrfToken = (req, res) => {
+  // Get the token from the cookie or issue a new one
   let token = req.cookies?.[CSRF_COOKIE];
+
   if (!token) {
-    token = issueCsrfToken(res);  // ✅ FIXED: was issueToken, now issueCsrfToken
+    // Issue a new token
+    token = issueCsrfToken(res);
+  } else {
+    // Refresh the cookie with explicit settings
+    // Use the same issueToken function to set the cookie correctly
+    token = issueCsrfToken(res);
   }
-  // Return token in both cookie AND response body
+
+  // Return token in response body AND set cookie
   res.status(200).json({
     success: true,
     csrfToken: token,
-    message: 'CSRF token set'
+    message: 'CSRF token ready'
   });
 };
-
 // ============================================
 // OTP METHODS
 // ============================================

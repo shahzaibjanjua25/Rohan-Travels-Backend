@@ -1,18 +1,9 @@
+// backend/src/app.js
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
-const compression = require('compression');
-const hpp = require('hpp');
-const mongoSanitize = require('express-mongo-sanitize');
-const rateLimit = require('express-rate-limit');
-
-const { ensureCsrfToken, verifyCsrf } = require('./middleware/csrf');
-
-const config = require('./config/env');
-const AppError = require('./utils/AppError');
-const { errorHandler, notFound } = require('./middleware/errorHandler');
+// ... other imports
 
 const app = express();
 
@@ -20,24 +11,33 @@ const app = express();
 app.set('trust proxy', 1);
 
 // --- Security --------------------------------------------------------------
-app.use(helmet());
-// backend/src/app.js
-app.use(
-  cors({
-    origin: ['https://rohantravels-frontend.vercel.app', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-  })
-);
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
+// ✅ CORS - MUST be configured before any routes
+const allowedOrigins = [
+  'https://rohantravels-frontend.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
 
 app.use(
-  rateLimit({
-    windowMs: config.rateLimit.windowMs,
-    max: config.rateLimit.max,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: 'Too many requests, please try again later' },
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.warn('❌ CORS blocked origin:', origin);
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Accept'],
+    exposedHeaders: ['Set-Cookie'],
   })
 );
 
