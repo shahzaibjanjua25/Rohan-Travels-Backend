@@ -7,8 +7,6 @@ const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 const { signAccessToken, setAuthCookie, clearAuthCookie } = require('../utils/token');
 const { issueToken: issueCsrfToken, CSRF_COOKIE } = require('../middleware/csrf');
-const { issueToken, CSRF_COOKIE } = require('../middleware/csrf');
-
 const { sendEmail } = require('../config/email');
 const config = require('../config/env');
 
@@ -181,11 +179,12 @@ exports.resetPassword = catchAsync(async (req, res) => {
 
 /**
  * GET /api/auth/csrf
+ * ✅ FIXED: Use issueCsrfToken instead of issueToken
  */
 exports.getCsrfToken = (req, res) => {
   let token = req.cookies?.[CSRF_COOKIE];
   if (!token) {
-    token = issueToken(res);
+    token = issueCsrfToken(res);  // ✅ FIXED: was issueToken, now issueCsrfToken
   }
   // Return token in both cookie AND response body
   res.status(200).json({
@@ -194,7 +193,6 @@ exports.getCsrfToken = (req, res) => {
     message: 'CSRF token set'
   });
 };
-
 
 // ============================================
 // OTP METHODS
