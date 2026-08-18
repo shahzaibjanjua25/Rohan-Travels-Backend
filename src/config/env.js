@@ -1,7 +1,8 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load .env from the current working directory (backend folder)
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 /**
  * Fail fast on missing configuration.

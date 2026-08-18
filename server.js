@@ -1,15 +1,14 @@
+//require('dotenv').config({ path: './.env' });
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
+
 const mongoose = require('mongoose');
 
-const config = require('./src/config/env'); // loads and validates .env first
+const config = require('./src/config/env');
 const connectDB = require('./src/config/db');
 const app = require('./src/app');
 
 let server;
 
-/**
- * Connect to Mongo *before* listening. Accepting traffic while the database is
- * still unreachable produces a wave of 500s that look like application bugs.
- */
 const start = async () => {
   await connectDB();
 

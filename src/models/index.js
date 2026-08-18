@@ -1,17 +1,18 @@
-
-// models/index.js
-
+// backend/src/models/index.js
 const User = require('./User');
 const Booking = require('./Booking');
 const Flight = require('./Flight');
 const Notification = require('./Notification');
-const Ledger = require('./Ledger');  // ✅ Make sure this is here
+const Ledger = require('./Ledger');
+const Settings = require('./Settings');
+const OTP = require('./OTP');
 
 module.exports = {
-  User: require('./User'),
-  Flight: require('./Flight'),
-  Booking: require('./Booking'),
-  Ledger: require('./Ledger'),
-  Notification: require('./Notification'),
-  Settings: require('./Settings'),
+  User,
+  Flight,
+  Booking,
+  Ledger,
+  Notification,
+  Settings,
+  OTP,
 };
