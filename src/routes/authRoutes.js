@@ -35,8 +35,7 @@ router.post('/reset-password', resetPasswordRules, validate, authController.rese
 router.post('/check-email', authController.checkEmail);
 router.post('/request-otp', authController.requestOTP);
 router.post('/verify-otp', authController.verifyOTP);
-router.post('/get-user-name', authController.getUserName);
-
+router.post('/get-user-name', authController.getUserName); // ✅ ADD THIS LINE
 
 // Get CSRF token
 router.get('/csrf', ensureCsrfToken, authController.getCsrfToken);

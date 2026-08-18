@@ -256,8 +256,13 @@ exports.requestOTP = catchAsync(async (req, res) => {
     attempts: 0,
   });
 
-  // Return the OTP in development for testing, but NOT in production
-  const isDev = process.env.NODE_ENV === 'development';
+  // ✅ ALWAYS return the OTP for development and testing
+  // In production, this should be disabled
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  console.log(`[OTP] Generated OTP for ${email}: ${otpCode}`);
+  console.log(`[OTP] Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`[OTP] Returning OTP: ${isDev ? 'YES' : 'NO'}`);
 
   res.status(200).json({
     success: true,
@@ -265,6 +270,8 @@ exports.requestOTP = catchAsync(async (req, res) => {
     ...(isDev && { otp: otpCode }),
   });
 });
+
+
 
 
 /**
@@ -347,7 +354,8 @@ exports.getUserName = catchAsync(async (req, res) => {
   }
 
   res.status(200).json({
+    success: true,
     name: user.name,
     email: user.email,
   });
-}); 
+});
