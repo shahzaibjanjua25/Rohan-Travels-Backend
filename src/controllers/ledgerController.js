@@ -9,10 +9,10 @@ const mongoose = require('mongoose');
 exports.getBalance = catchAsync(async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log('🔍 Getting balance for user:', userId);
+    // console.log('🔍 Getting balance for user:', userId);This is test debug code
     
     const balance = await Ledger.getBalance(userId);
-    console.log('💰 Balance:', balance);
+    // console.log('💰 Balance:', balance);This is test debug code
     
     res.status(200).json({
       success: true,
@@ -39,7 +39,7 @@ exports.getEntries = catchAsync(async (req, res) => {
 
     // Get user ID as string
     const userId = req.user._id.toString();
-    console.log('📊 Fetching ledger entries for user:', userId);
+    // console.log('📊 Fetching ledger entries for user:', userId);This is test debug code
 
     // Build filter - use string comparison for reliability
     const filter = { user: userId };
@@ -48,7 +48,7 @@ exports.getEntries = catchAsync(async (req, res) => {
     if (req.query.type) filter.type = req.query.type;
     if (req.query.category) filter.category = req.query.category;
 
-    console.log('📊 Filter:', JSON.stringify(filter));
+    // console.log('📊 Filter:', JSON.stringify(filter));This is test debug code
 
     // Try to find entries - use string comparison
     const entries = await Ledger.find(filter)
@@ -62,7 +62,7 @@ exports.getEntries = catchAsync(async (req, res) => {
 
     const total = await Ledger.countDocuments(filter);
 
-    console.log('📊 Found entries:', entries.length);
+    // console.log('📊 Found entries:', entries.length);This is test debug code
 
     res.status(200).json({
       success: true,

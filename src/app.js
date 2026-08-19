@@ -78,29 +78,29 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', environment: config.env });
 });
 
-// --- Debug endpoint (temporarily) ---
-app.get('/api/debug-cookie-config', (req, res) => {
-  res.json({
-    cookie: config.cookie,
-    csrfEnabled: config.csrfEnabled,
-    env: {
-      COOKIE_SECURE: process.env.COOKIE_SECURE,
-      COOKIE_SAMESITE: process.env.COOKIE_SAMESITE,
-      CSRF_ENABLED: process.env.CSRF_ENABLED,
-    }
-  });
-});
+// --- Debug endpoint (temporarily) --- This is test debug code
+// app.get('/api/debug-cookie-config', (req, res) => {
+//   res.json({
+//     cookie: config.cookie,
+//     csrfEnabled: config.csrfEnabled,
+//     env: {
+//       COOKIE_SECURE: process.env.COOKIE_SECURE,
+//       COOKIE_SAMESITE: process.env.COOKIE_SAMESITE,
+//       CSRF_ENABLED: process.env.CSRF_ENABLED,
+//     }
+//   });
+// });
 // backend/src/app.js
 
-app.get('/api/debug-csrf', (req, res) => {
-  const csrfToken = req.cookies?.rt_csrf || null;
-  res.json({
-    csrfCookie: csrfToken,
-    allCookies: req.cookies,
-    secure: config.cookie.secure,
-    sameSite: config.cookie.sameSite,
-  });
-});
+// app.get('/api/debug-csrf', (req, res) => {
+//   const csrfToken = req.cookies?.rt_csrf || null;
+//   res.json({
+//     csrfCookie: csrfToken,
+//     allCookies: req.cookies,
+//     secure: config.cookie.secure,
+//     sameSite: config.cookie.sameSite,
+//   });
+// });
 // ============================================
 // IMPORT ROUTES
 // ============================================

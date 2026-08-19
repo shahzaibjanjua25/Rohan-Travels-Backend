@@ -16,27 +16,27 @@ exports.getFlights = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
 
-  console.log('========================================');
-  console.log('🔍 GET /api/flights');
-  console.log('🔍 isAdmin:', isAdmin);
-  console.log('🔍 User:', req.user?.email || 'Not authenticated');
-  console.log('🔍 Query params:', JSON.stringify(req.query, null, 2));
+  // console.log('========================================');
+  // console.log('🔍 GET /api/flights');This is test debug code
+  // console.log('🔍 isAdmin:', isAdmin);
+  // console.log('🔍 User:', req.user?.email || 'Not authenticated');
+  // console.log('🔍 Query params:', JSON.stringify(req.query, null, 2));
 
   // Build the filter using the utility
   const filter = buildFilter(req.query, isAdmin);
 
-  console.log('📊 Final filter being applied:', JSON.stringify(filter, null, 2));
+  // console.log('📊 Final filter being applied:', JSON.stringify(filter, null, 2));This is test debug code
 
   // Get total count first for debugging
   const totalCount = await Flight.countDocuments(filter);
-  console.log('📊 Total count from DB with filter:', totalCount);
+  // console.log('📊 Total count from DB with filter:', totalCount);This is test debug code
 
   // If no results, check if there are any flights at all
   if (totalCount === 0) {
     const allFlights = await Flight.find({}).limit(5);
-    console.log('📊 Sample of all flights in DB:', allFlights.length);
+    // console.log('📊 Sample of all flights in DB:', allFlights.length);This is test debug code
     if (allFlights.length > 0) {
-      console.log('📊 First flight:', JSON.stringify(allFlights[0], null, 2));
+      // console.log('📊 First flight:', JSON.stringify(allFlights[0], null, 2));This is test debug code
     }
   }
 
@@ -50,8 +50,8 @@ exports.getFlights = catchAsync(async (req, res) => {
     Flight.countDocuments(filter),
   ]);
 
-  console.log(`📊 Returning ${flights.length} flights out of ${total} total`);
-  console.log('========================================');
+  // console.log(`📊 Returning ${flights.length} flights out of ${total} total`);This is test debug code
+  // console.log('========================================');
 
   res.status(200).json({
     success: true,

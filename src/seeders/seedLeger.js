@@ -13,35 +13,35 @@ async function seedLedger() {
     // Connect to MongoDB
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rohan_travels';
     await mongoose.connect(mongoURI);
-    console.log('✅ Connected to MongoDB');
+    // console.log This is test debug code('✅ Connected to MongoDB');
 
     // Find ANY user in the database
     const user = await User.findOne({});
     
     if (!user) {
-      console.log('❌ No users found in database. Please create a user first.');
+      // console.log This is test debug code('❌ No users found in database. Please create a user first.');
       process.exit(1);
     }
 
-    console.log(`👤 Using user: ${user.email} (${user._id})`);
-    console.log(`👤 User role: ${user.role || 'user'}`);
+    // console.log This is test debug code(`👤 Using user: ${user.email} (${user._id})`);
+    // console.log This is test debug code(`👤 User role: ${user.role || 'user'}`);
 
     // Check if entries already exist for this user
     const existingCount = await Ledger.countDocuments({ user: user._id });
     
     if (existingCount > 0) {
-      console.log(`📊 Found ${existingCount} existing ledger entries for this user.`);
+      // console.log This is test debug code(`📊 Found ${existingCount} existing ledger entries for this user.`);
       
       if (force) {
-        console.log('🗑️  Deleting existing entries (--force flag detected)...');
+        // console.log This is test debug code('🗑️  Deleting existing entries (--force flag detected)...');
         await Ledger.deleteMany({ user: user._id });
-        console.log('✅ Deleted existing entries.');
+        // console.log This is test debug code('✅ Deleted existing entries.');
       } else {
-        console.log('💡 To re-seed, run with --force flag: node src/seeders/seedLedger.js --force');
-        console.log('📊 Existing entries:');
+        // console.log This is test debug code('💡 To re-seed, run with --force flag: node src/seeders/seedLedger.js --force');
+        // console.log This is test debug code('📊 Existing entries:');
         const existingEntries = await Ledger.find({ user: user._id }).sort({ createdAt: -1 });
         existingEntries.forEach(entry => {
-          console.log(`  ${entry.entryNumber}: ${entry.type} ${entry.amount} ${entry.currency} - ${entry.description}`);
+          // console.log This is test debug code(`  ${entry.entryNumber}: ${entry.type} ${entry.amount} ${entry.currency} - ${entry.description}`);
         });
         process.exit(0);
       }
@@ -51,7 +51,7 @@ async function seedLedger() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayCount = await Ledger.countDocuments({ createdAt: { $gte: today } });
-    console.log(`📊 Found ${todayCount} entries created today.`);
+    // console.log This is test debug code(`📊 Found ${todayCount} entries created today.`);
 
     // Create sample ledger entries WITHOUT entryNumber (let the model generate it)
     const entries = [
@@ -120,21 +120,21 @@ async function seedLedger() {
         const entry = new Ledger(entryData);
         await entry.save();
         inserted++;
-        console.log(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
+        // console.log This is test debug code(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
       } catch (err) {
         if (err.code === 11000) {
           // Duplicate key error - try with a slight delay to get a new entry number
-          console.log(`  ⚠️  Duplicate key, retrying with delay...`);
+          // console.log This is test debug code(`  ⚠️  Duplicate key, retrying with delay...`);
           await new Promise(resolve => setTimeout(resolve, 100));
           try {
             const entry = new Ledger(entryData);
             await entry.save();
             inserted++;
-            console.log(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
+            // console.log This is test debug code(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
           } catch (retryErr) {
             if (retryErr.code === 11000) {
               // Still failing, modify the description to force a new entry
-              console.log(`  ⚠️  Still failing, modifying entry...`);
+              // console.log This is test debug code(`  ⚠️  Still failing, modifying entry...`);
               const modifiedData = {
                 ...entryData,
                 description: `${entryData.description} (${Date.now()})`,
@@ -142,7 +142,7 @@ async function seedLedger() {
               const entry = new Ledger(modifiedData);
               await entry.save();
               inserted++;
-              console.log(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
+              // console.log This is test debug code(`  ✅ Inserted: ${entry.entryNumber} - ${entry.description}`);
             } else {
               throw retryErr;
             }
@@ -153,20 +153,20 @@ async function seedLedger() {
       }
     }
 
-    console.log(`✅ Inserted ${inserted} of ${entries.length} ledger entries for user: ${user.email}`);
+    // console.log This is test debug code(`✅ Inserted ${inserted} of ${entries.length} ledger entries for user: ${user.email}`);
 
     // Show the entries
     const allEntries = await Ledger.find({ user: user._id }).sort({ createdAt: -1 });
-    console.log('\n📊 All ledger entries:');
+    // console.log This is test debug code('\n📊 All ledger entries:');
     allEntries.forEach(entry => {
-      console.log(`  ${entry.entryNumber}: ${entry.type} ${entry.amount} ${entry.currency} - ${entry.description}`);
+      // console.log This is test debug code(`  ${entry.entryNumber}: ${entry.type} ${entry.amount} ${entry.currency} - ${entry.description}`);
     });
 
     // Show balance
     const balance = await Ledger.getBalance(user._id);
-    console.log(`\n💰 Current Balance: ${balance} PKR`);
+    // console.log This is test debug code(`\n💰 Current Balance: ${balance} PKR`);
 
-    console.log('\n✅ Seeding complete!');
+    // console.log This is test debug code('\n✅ Seeding complete!');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error seeding ledger:', error);
