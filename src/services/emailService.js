@@ -39,7 +39,7 @@ If you didn't request this verification, please ignore this email.
 Your account is secure.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Need help? Contact us at support@rohantravels.com
+Need help? Contact us at mrohantraveltour@gmail.com
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 © ${new Date().getFullYear()} Rohan Travels & Tours. All rights reserved.
@@ -202,7 +202,7 @@ This is an automated message. Please do not reply to this email.
             <hr class="divider">
             <p class="info-text" style="font-size: 12px; color: #8a94a6;">
                 Need help? Contact our support team at
-                <strong>support@rohantravels.com</strong>
+                <strong>mrohantraveltour@gmail.com</strong>
             </p>
         </div>
         <div class="footer">
