@@ -123,8 +123,9 @@ exports.getPackage = catchAsync(async (req, res) => {
 exports.createPackage = catchAsync(async (req, res) => {
     const data = req.body;
 
-    // Validate hotels
+    // Validate hotels - preserve ALL fields including nights
     if (data.makkahHotel && data.makkahHotel.name) {
+        // Check if hotel exists in the Hotel collection
         let hotel = await Hotel.findOne({
             name: data.makkahHotel.name,
             city: 'makkah'
@@ -137,7 +138,11 @@ exports.createPackage = catchAsync(async (req, res) => {
                 rating: data.makkahHotel.rating || 0
             });
         }
-        data.makkahHotel = hotel.toObject();
+        // Store the hotel reference AND keep the nights from the request
+        data.makkahHotel = {
+            ...hotel.toObject(),
+            nights: data.makkahHotel.nights || 0  // ← CRITICAL: preserve nights
+        };
     }
 
     if (data.madinahHotel && data.madinahHotel.name) {
@@ -153,7 +158,10 @@ exports.createPackage = catchAsync(async (req, res) => {
                 rating: data.madinahHotel.rating || 0
             });
         }
-        data.madinahHotel = hotel.toObject();
+        data.madinahHotel = {
+            ...hotel.toObject(),
+            nights: data.madinahHotel.nights || 0  // ← CRITICAL: preserve nights
+        };
     }
 
     data.createdBy = req.user._id;
@@ -162,7 +170,6 @@ exports.createPackage = catchAsync(async (req, res) => {
 
     res.status(201).json({ success: true, data: pkg });
 });
-
 /**
  * PUT /api/umrah/packages/:id
  * Update an Umrah package (admin only)
@@ -186,7 +193,10 @@ exports.updatePackage = catchAsync(async (req, res) => {
                 rating: data.makkahHotel.rating || 0
             });
         }
-        data.makkahHotel = hotel.toObject();
+        data.makkahHotel = {
+            ...hotel.toObject(),
+            nights: data.makkahHotel.nights || 0  // ← CRITICAL: preserve nights
+        };
     }
 
     if (data.madinahHotel && data.madinahHotel.name) {
@@ -202,7 +212,10 @@ exports.updatePackage = catchAsync(async (req, res) => {
                 rating: data.madinahHotel.rating || 0
             });
         }
-        data.madinahHotel = hotel.toObject();
+        data.madinahHotel = {
+            ...hotel.toObject(),
+            nights: data.madinahHotel.nights || 0  // ← CRITICAL: preserve nights
+        };
     }
 
     Object.assign(pkg, data);
