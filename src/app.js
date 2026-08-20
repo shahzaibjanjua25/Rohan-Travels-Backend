@@ -8,6 +8,7 @@ const compression = require('compression');
 const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize'); // ✅ ADD THIS LINE
 const rateLimit = require('express-rate-limit');
+const umrahRoutes = require('./routes/umrahRoutes');
 
 const { ensureCsrfToken, verifyCsrf } = require('./middleware/csrf');
 const config = require('./config/env');
@@ -53,6 +54,7 @@ app.use(helmet({
 
 // --- Body parsing ----------------------------------------------------------
 app.use(express.json({ limit: '10kb' }));
+app.use('/api/umrah', umrahRoutes);
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Auth token lives in an httpOnly cookie, so it must be parsed before any

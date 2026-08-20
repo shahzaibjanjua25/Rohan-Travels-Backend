@@ -121,11 +121,26 @@ const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 
+  // backend/src/config/env.js - Add to seed config
   seed: {
     adminEmail: process.env.SEED_ADMIN_EMAIL,
     adminPassword: process.env.SEED_ADMIN_PASSWORD,
     adminName: process.env.SEED_ADMIN_NAME || 'System Administrator',
   },
+  // Add Umrah default hotel seeding
+  umrah: {
+    defaultMakkahHotels: [
+      { name: 'WEDAM SIX', distance: 'Shuttle', nights: 8 },
+      { name: 'WHITE LION', distance: '1200 M', nights: 8 },
+      { name: 'MASARAT KHALIL / NADA HIJRA', distance: '750 M', nights: 8 },
+      { name: 'MASARAT GOLDEN', distance: '600 M', nights: 8 }
+    ],
+    defaultMadinahHotels: [
+      { name: 'QADAT AL DIYAFAH / HAMOUDA NEBRAS GOLDEN', distance: 'Shuttle', nights: 6 },
+      { name: 'HAMOUDA AL MASI / SIMILAR', distance: '650 M', nights: 6 },
+      { name: 'HAMOUDA NEBRAS 1&2 (OLD BURJ HAKEEM) / SIMILAR', distance: '450 M', nights: 6 }
+    ]
+  }
 };
 
 module.exports = config;

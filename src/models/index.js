@@ -6,6 +6,9 @@ const Notification = require('./Notification');
 const Ledger = require('./Ledger');
 const Settings = require('./Settings');
 const OTP = require('./OTP');
+const UmrahPackage = require('./UmrahPackage');
+const UmrahBooking = require('./UmrahBooking');
+const Hotel = require('./Hotel');
 
 module.exports = {
   User,
@@ -15,4 +18,7 @@ module.exports = {
   Notification,
   Settings,
   OTP,
+  UmrahPackage,
+  UmrahBooking,
+  Hotel,
 };
