@@ -13,7 +13,7 @@ const hotelSchema = new mongoose.Schema({
     required: true
   },
   distance: {
-    type: String, // e.g., "1200 M", "Shuttle"
+    type: String,
     default: ''
   },
   nights: {
@@ -25,12 +25,8 @@ const hotelSchema = new mongoose.Schema({
     min: 0,
     max: 5,
     default: 0
-  },
-  isActive: {
-    type: Boolean,
-    default: true
   }
-}, { timestamps: true });
+}, { _id: false });
 
 const sharingPricingSchema = new mongoose.Schema({
   quad: { type: Number, default: 0 },
@@ -39,7 +35,15 @@ const sharingPricingSchema = new mongoose.Schema({
 }, { _id: false });
 
 const umrahPackageSchema = new mongoose.Schema({
-  // Flight Details
+  packageName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    default: ''
+  },
   airline: {
     type: String,
     required: true,
@@ -97,7 +101,7 @@ const umrahPackageSchema = new mongoose.Schema({
     default: '00:00'
   },
   duration: {
-    type: Number, // in days
+    type: Number,
     required: true,
     min: 1
   },
@@ -110,16 +114,10 @@ const umrahPackageSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  stopDetails: {
-    type: String,
-    default: ''
-  },
   baggageAllowance: {
     departure: { type: String, default: '23 KG' },
     arrival: { type: String, default: '46 KG' }
   },
-
-  // Hotel Details
   makkahHotel: {
     type: hotelSchema,
     required: true
@@ -128,8 +126,6 @@ const umrahPackageSchema = new mongoose.Schema({
     type: hotelSchema,
     required: true
   },
-
-  // Pricing
   perPersonPrice: {
     type: Number,
     required: true,
@@ -152,32 +148,13 @@ const umrahPackageSchema = new mongoose.Schema({
     default: 'PKR',
     uppercase: true
   },
-
-  // Package details
-  packageName: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  description: {
-    type: String,
-    default: ''
+  totalSeats: {
+    type: Number,
+    default: 0
   },
   includes: {
     type: [String],
     default: ['Visa', 'Ticket', 'Accommodation', 'Transport']
-  },
-  excludes: {
-    type: [String],
-    default: []
-  },
-  availableSeats: {
-    type: Number,
-    default: 0
-  },
-  totalSeats: {
-    type: Number,
-    default: 0
   },
   isActive: {
     type: Boolean,
@@ -190,18 +167,13 @@ const umrahPackageSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  },
-  bookings: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'UmrahBooking'
-  }]
+  }
 }, { timestamps: true });
 
-// Indexes for search
+// Indexes
 umrahPackageSchema.index({ departureDate: 1 });
 umrahPackageSchema.index({ airline: 1 });
 umrahPackageSchema.index({ 'origin.city': 1 });
-umrahPackageSchema.index({ 'destination.city': 1 });
 umrahPackageSchema.index({ isActive: 1 });
 umrahPackageSchema.index({ isFeatured: 1 });
 
@@ -214,11 +186,6 @@ umrahPackageSchema.virtual('lowestPrice').get(function() {
     this.perPersonPrice
   ].filter(p => p && p > 0);
   return prices.length ? Math.min(...prices) : this.perPersonPrice;
-});
-
-// Virtual for available seats
-umrahPackageSchema.virtual('availableSeatsCount').get(function() {
-  return this.availableSeats || 0;
 });
 
 umrahPackageSchema.set('toJSON', { virtuals: true });

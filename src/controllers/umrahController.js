@@ -27,9 +27,6 @@ exports.getPackages = catchAsync(async (req, res) => {
   if (req.query.origin) {
     filter['origin.city'] = { $regex: req.query.origin, $options: 'i' };
   }
-  if (req.query.destination) {
-    filter['destination.city'] = { $regex: req.query.destination, $options: 'i' };
-  }
   if (req.query.departureDate) {
     const start = new Date(req.query.departureDate);
     const end = new Date(start);
@@ -79,8 +76,7 @@ exports.getPackages = catchAsync(async (req, res) => {
  */
 exports.getPackage = catchAsync(async (req, res) => {
   const pkg = await UmrahPackage.findById(req.params.id)
-    .populate('createdBy', 'name email')
-    .populate('bookings');
+    .populate('createdBy', 'name email');
 
   if (!pkg) throw AppError.notFound('Package not found');
   
@@ -96,7 +92,6 @@ exports.createPackage = catchAsync(async (req, res) => {
   
   // Validate hotels
   if (data.makkahHotel && data.makkahHotel.name) {
-    // Check if hotel exists or create new
     let hotel = await Hotel.findOne({ 
       name: data.makkahHotel.name,
       city: 'makkah'
@@ -145,7 +140,6 @@ exports.updatePackage = catchAsync(async (req, res) => {
 
   const data = req.body;
 
-  // Update hotels if provided
   if (data.makkahHotel && data.makkahHotel.name) {
     let hotel = await Hotel.findOne({
       name: data.makkahHotel.name,
@@ -253,18 +247,6 @@ exports.createBooking = catchAsync(async (req, res) => {
   if (!pkg) throw AppError.notFound('Package not found');
   if (!pkg.isActive) throw AppError.conflict('This package is no longer available');
 
-  // Check available seats
-  const bookingCount = await UmrahBooking.countDocuments({
-    package: packageId,
-    status: { $in: ['pending', 'confirmed'] }
-  });
-  const bookedSeats = bookingCount;
-  const availableSeats = pkg.totalSeats - bookedSeats;
-
-  if (passengers.length > availableSeats) {
-    throw AppError.conflict(`Only ${availableSeats} seats available, but ${passengers.length} requested`);
-  }
-
   // Calculate pricing
   const sharingPrice = pkg.sharingPrices?.[roomType] || pkg.perPersonPrice;
   const adultCount = passengers.filter(p => p.type === 'adult').length;
@@ -304,10 +286,7 @@ exports.createBooking = catchAsync(async (req, res) => {
     paymentStatus: 'unpaid'
   });
 
-  // Update available seats (increment booking count)
-  // We'll calculate available seats from bookings count
-
-  // Create notification for admin
+  // Notify admins
   const admins = await User.find({ role: 'admin' }).select('_id');
   if (admins.length > 0) {
     await Notification.insertMany(admins.map(admin => ({
@@ -320,30 +299,6 @@ exports.createBooking = catchAsync(async (req, res) => {
       link: `/admin/umrah/bookings/${booking._id}`
     })));
   }
-
-  // Send email confirmation
-  await sendEmail({
-    to: customerDetails?.email || req.user.email,
-    subject: `Umrah Booking Confirmation - ${booking.bookingReference}`,
-    text: `
-      Dear ${customerDetails?.name || req.user.name},
-
-      Thank you for booking your Umrah package with Rohan Travels & Tours.
-
-      Booking Reference: ${booking.bookingReference}
-      Package: ${pkg.packageName}
-      Departure: ${pkg.origin.city} → ${pkg.destination.city}
-      Departure Date: ${new Date(pkg.departureDate).toLocaleDateString()}
-      Total Amount: ${totalAmount} ${pkg.currency || 'PKR'}
-
-      We will contact you shortly to confirm your booking.
-
-      For any questions, please contact us at mrohantraveltour@gmail.com
-
-      Jazakallah Khair,
-      Rohan Travels & Tours
-    `
-  });
 
   res.status(201).json({ success: true, data: booking });
 });
@@ -436,20 +391,6 @@ exports.cancelBooking = catchAsync(async (req, res) => {
   };
   await booking.save();
 
-  // Notify admin
-  const admins = await User.find({ role: 'admin' }).select('_id');
-  if (admins.length > 0) {
-    await Notification.insertMany(admins.map(admin => ({
-      user: admin._id,
-      title: 'Umrah Booking Cancelled',
-      message: `Umrah booking ${booking.bookingReference} was cancelled by ${req.user.name}`,
-      type: 'booking',
-      priority: 'high',
-      relatedBooking: booking._id,
-      link: `/admin/umrah/bookings/${booking._id}`
-    })));
-  }
-
   res.status(200).json({ success: true, data: booking });
 });
 
@@ -479,16 +420,6 @@ exports.updateBookingStatus = catchAsync(async (req, res) => {
     updatedBy: req.user._id
   });
   await booking.save();
-
-  // Send notification to user
-  await Notification.create({
-    user: booking.user,
-    title: `Umrah Booking ${status}`,
-    message: `Your Umrah booking ${booking.bookingReference} has been ${status}.`,
-    type: 'booking',
-    relatedBooking: booking._id,
-    link: `/umrah/bookings/${booking._id}`
-  });
 
   res.status(200).json({ success: true, data: booking });
 });
@@ -544,26 +475,6 @@ exports.updateHotel = catchAsync(async (req, res) => {
 exports.deleteHotel = catchAsync(async (req, res) => {
   const hotel = await Hotel.findById(req.params.id);
   if (!hotel) throw AppError.notFound('Hotel not found');
-
-  // Check if hotel is used in any active package
-  const usedInPackages = await UmrahPackage.countDocuments({
-    $or: [
-      { 'makkahHotel.name': hotel.name },
-      { 'madinahHotel.name': hotel.name }
-    ],
-    isActive: true
-  });
-
-  if (usedInPackages > 0) {
-    hotel.isActive = false;
-    await hotel.save();
-    return res.status(200).json({
-      success: true,
-      softDeleted: true,
-      message: 'Hotel is used in active packages, so it was deactivated instead of deleted',
-      data: hotel
-    });
-  }
 
   await hotel.deleteOne();
   res.status(200).json({ success: true, softDeleted: false, data: {} });

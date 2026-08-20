@@ -24,42 +24,44 @@ const {
 } = require('../controllers/umrahController');
 
 // ============================================
-// PUBLIC ROUTES
+// PUBLIC ROUTES (No authentication required)
 // ============================================
 
-// Package routes (public)
+// Package routes (public - anyone can view packages)
 router.get('/packages', getPackages);
 router.get('/packages/:id', getPackage);
 router.get('/hotels', getHotels);
 
 // ============================================
-// PROTECTED ROUTES
+// PROTECTED ROUTES (Require authentication)
 // ============================================
 
+// All routes below this line require authentication
 router.use(protect);
 
-// Booking routes
+// Booking routes (authenticated users)
 router.post('/bookings', createBooking);
 router.get('/bookings', getBookings);
 router.get('/bookings/:id', getBooking);
 router.patch('/bookings/:id/cancel', cancelBooking);
 
 // ============================================
-// ADMIN ROUTES
+// ADMIN ROUTES (Require admin role)
 // ============================================
 
+// All routes below this line require admin role
 router.use(authorize('admin'));
 
-// Package management
+// Package management (admin only)
 router.post('/packages', createPackage);
 router.put('/packages/:id', updatePackage);
 router.delete('/packages/:id', deletePackage);
 router.patch('/packages/:id/status', updatePackageStatus);
 
-// Booking management
+// Booking management (admin only)
 router.patch('/bookings/:id/status', updateBookingStatus);
 
-// Hotel management
+// Hotel management (admin only)
 router.post('/hotels', createHotel);
 router.put('/hotels/:id', updateHotel);
 router.delete('/hotels/:id', deleteHotel);

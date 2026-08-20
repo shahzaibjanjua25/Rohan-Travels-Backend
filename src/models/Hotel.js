@@ -62,7 +62,6 @@ const hotelSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Indexes
 hotelSchema.index({ city: 1 });
 hotelSchema.index({ isActive: 1 });
 hotelSchema.index({ name: 1 });

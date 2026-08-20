@@ -6,9 +6,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const hpp = require('hpp');
-const mongoSanitize = require('express-mongo-sanitize'); // ✅ ADD THIS LINE
+const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
-const umrahRoutes = require('./routes/umrahRoutes');
 
 const { ensureCsrfToken, verifyCsrf } = require('./middleware/csrf');
 const config = require('./config/env');
@@ -21,8 +20,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 // --- CORS Configuration - MUST BE FIRST ---
-// ✅ Allow both production and local development
-const allowedOrigins = config.corsOrigins;   // from CORS_ORIGINS
+const allowedOrigins = config.corsOrigins;
 
 const originAllowed = (origin) =>
   allowedOrigins.some((pattern) => {
@@ -38,7 +36,7 @@ app.use(
       if (!origin) return callback(null, true);
       if (originAllowed(origin)) return callback(null, true);
       console.warn('[cors] blocked origin:', origin);
-      return callback(null, false);   // <- false, not an Error
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -54,11 +52,9 @@ app.use(helmet({
 
 // --- Body parsing ----------------------------------------------------------
 app.use(express.json({ limit: '10kb' }));
-app.use('/api/umrah', umrahRoutes);
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Auth token lives in an httpOnly cookie, so it must be parsed before any
-// route that calls `protect`.
+// Auth token lives in an httpOnly cookie
 app.use(cookieParser());
 
 // Strip `$` and `.` from user input
@@ -67,8 +63,7 @@ app.use(mongoSanitize());
 // Reject duplicated query params
 app.use(hpp({ whitelist: ['status', 'airline', 'origin', 'destination'] }));
 
-// CSRF must sit after cookieParser and before any route that mutates state.
-// app.use(ensureCsrfToken);
+// CSRF
 app.use(verifyCsrf);
 
 app.use(compression());
@@ -80,29 +75,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', environment: config.env });
 });
 
-// --- Debug endpoint (temporarily) --- This is test debug code
-// app.get('/api/debug-cookie-config', (req, res) => {
-//   res.json({
-//     cookie: config.cookie,
-//     csrfEnabled: config.csrfEnabled,
-//     env: {
-//       COOKIE_SECURE: process.env.COOKIE_SECURE,
-//       COOKIE_SAMESITE: process.env.COOKIE_SAMESITE,
-//       CSRF_ENABLED: process.env.CSRF_ENABLED,
-//     }
-//   });
-// });
-// backend/src/app.js
-
-// app.get('/api/debug-csrf', (req, res) => {
-//   const csrfToken = req.cookies?.rt_csrf || null;
-//   res.json({
-//     csrfCookie: csrfToken,
-//     allCookies: req.cookies,
-//     secure: config.cookie.secure,
-//     sameSite: config.cookie.sameSite,
-//   });
-// });
 // ============================================
 // IMPORT ROUTES
 // ============================================
@@ -114,6 +86,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const userRoutes = require('./routes/userRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const umrahRoutes = require('./routes/umrahRoutes'); // ✅ ADD THIS LINE
 
 // ============================================
 // USE ROUTES
@@ -126,6 +99,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/umrah', umrahRoutes); // ✅ ADD THIS LINE
 
 // --- Error handling (must be last) -----------------------------------------
 app.use(notFound);

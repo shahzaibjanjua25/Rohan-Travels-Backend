@@ -17,7 +17,6 @@ const umrahBookingSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
-  // Passenger details
   passengers: [{
     title: { type: String, enum: ['Mr', 'Mrs', 'Ms', 'Dr', 'Master', 'Miss'], default: 'Mr' },
     firstName: { type: String, required: true, trim: true },
@@ -29,20 +28,17 @@ const umrahBookingSchema = new mongoose.Schema({
     cnic: { type: String, trim: true },
     type: { type: String, enum: ['adult', 'child', 'infant'], default: 'adult' }
   }],
-  // Room sharing selection
   roomType: {
     type: String,
     enum: ['quad', 'triple', 'double'],
     default: 'quad'
   },
-  // Pricing
   pricing: {
     basePrice: { type: Number, required: true },
     sharingPrice: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
     currency: { type: String, default: 'PKR' }
   },
-  // Customer contact
   customerDetails: {
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -88,7 +84,6 @@ umrahBookingSchema.pre('save', async function(next) {
   return next();
 });
 
-// Virtual for passenger count
 umrahBookingSchema.virtual('passengerCount').get(function() {
   return this.passengers ? this.passengers.length : 0;
 });
