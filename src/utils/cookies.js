@@ -46,7 +46,7 @@ const writeCookie = (res, name, value, opts = {}) => {
   if (sameSite === 'none' && secure) parts.push('Partitioned');
 
   res.append('Set-Cookie', parts.join('; '));
-};
+};//reset
 
 const clearCookie = (res, name, opts = {}) => {
   writeCookie(res, name, '', { ...opts, maxAge: 0 });
