@@ -49,7 +49,7 @@ exports.getEntries = catchAsync(async (req, res) => {
     if (req.query.category) filter.category = req.query.category;
 
     // console.log('📊 Filter:', JSON.stringify(filter));This is test debug code
-
+ 
     // Try to find entries - use string comparison
     const entries = await Ledger.find(filter)
       .sort({ createdAt: -1 })
