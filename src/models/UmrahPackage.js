@@ -29,9 +29,11 @@ const hotelSchema = new mongoose.Schema({
 }, { _id: false });
 
 const sharingPricingSchema = new mongoose.Schema({
-  quad: { type: Number, default: 0 },
+  single: { type: Number, default: 0 },
+  double: { type: Number, default: 0 },
   triple: { type: Number, default: 0 },
-  double: { type: Number, default: 0 }
+  quad: { type: Number, default: 0 },
+  sharing: { type: Number, default: 0 } // For 5+ people sharing
 }, { _id: false });
 
 const umrahPackageSchema = new mongoose.Schema({
@@ -122,6 +124,10 @@ const umrahPackageSchema = new mongoose.Schema({
     type: hotelSchema,
     required: true
   },
+  makkahReturnHotel: {
+    type: hotelSchema,
+    default: null
+  },
   madinahHotel: {
     type: hotelSchema,
     required: true
@@ -156,6 +162,20 @@ const umrahPackageSchema = new mongoose.Schema({
     type: [String],
     default: ['Visa', 'Ticket', 'Accommodation', 'Transport']
   },
+  // ✨ NEW: Ziyarat Package Pricing
+  ziyaratEnabled: {
+    type: Boolean,
+    default: false
+  },
+  ziyaratPrice: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  ziyaratDescription: {
+    type: String,
+    default: 'Guided Ziyarat tour of holy sites in Makkah and Madinah'
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -180,9 +200,11 @@ umrahPackageSchema.index({ isFeatured: 1 });
 // Virtual for lowest price
 umrahPackageSchema.virtual('lowestPrice').get(function() {
   const prices = [
-    this.sharingPrices?.quad,
-    this.sharingPrices?.triple,
+    this.sharingPrices?.single,
     this.sharingPrices?.double,
+    this.sharingPrices?.triple,
+    this.sharingPrices?.quad,
+    this.sharingPrices?.sharing,
     this.perPersonPrice
   ].filter(p => p && p > 0);
   return prices.length ? Math.min(...prices) : this.perPersonPrice;

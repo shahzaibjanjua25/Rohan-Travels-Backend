@@ -30,7 +30,7 @@ const umrahBookingSchema = new mongoose.Schema({
   }],
   roomType: {
     type: String,
-    enum: ['quad', 'triple', 'double'],
+    enum: ['single', 'double', 'triple', 'quad', 'sharing'],
     default: 'quad'
   },
   pricing: {
@@ -50,6 +50,15 @@ const umrahBookingSchema = new mongoose.Schema({
   specialRequests: {
     type: String,
     default: ''
+  },
+  // ✨ NEW: Ziyarat fields
+  ziyaratEnabled: {
+    type: Boolean,
+    default: false
+  },
+  ziyaratPrice: {
+    type: Number,
+    default: 0
   },
   status: {
     type: String,

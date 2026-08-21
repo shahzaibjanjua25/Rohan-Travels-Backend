@@ -13,12 +13,6 @@ const config = require('../config/env');
  * GET /api/umrah/packages
  * List all Umrah packages with filters
  */
-// backend/src/controllers/umrahController.js - Update getPackages function
-
-/**
- * GET /api/umrah/packages
- * List all Umrah packages with filters
- */
 exports.getPackages = catchAsync(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -26,7 +20,6 @@ exports.getPackages = catchAsync(async (req, res) => {
 
     const filter = { isActive: true };
 
-    // Apply filters from query params
     if (req.query.airline) {
         filter.airline = { $regex: req.query.airline, $options: 'i' };
     }
@@ -54,7 +47,6 @@ exports.getPackages = catchAsync(async (req, res) => {
 
     // Also filter by sharing prices if min/max are provided
     if (req.query.minPrice || req.query.maxPrice) {
-        // Add sharing prices to the filter
         const priceFilter = {};
         if (req.query.minPrice) {
             const min = parseInt(req.query.minPrice);
@@ -67,17 +59,17 @@ exports.getPackages = catchAsync(async (req, res) => {
         if (Object.keys(priceFilter).length > 0) {
             filter.$or = [
                 { perPersonPrice: priceFilter },
-                { 'sharingPrices.quad': priceFilter },
-                { 'sharingPrices.triple': priceFilter },
+                { 'sharingPrices.single': priceFilter },
                 { 'sharingPrices.double': priceFilter },
+                { 'sharingPrices.triple': priceFilter },
+                { 'sharingPrices.quad': priceFilter },
+                { 'sharingPrices.sharing': priceFilter },
             ];
         }
     }
 
     const sort = req.query.sort || 'departureDate';
     const sortOrder = req.query.order === 'desc' ? -1 : 1;
-
-    console.log('Filter:', JSON.stringify(filter, null, 2));
 
     const [packages, total] = await Promise.all([
         UmrahPackage.find(filter)
@@ -125,7 +117,6 @@ exports.createPackage = catchAsync(async (req, res) => {
 
     // Validate hotels - preserve ALL fields including nights
     if (data.makkahHotel && data.makkahHotel.name) {
-        // Check if hotel exists in the Hotel collection
         let hotel = await Hotel.findOne({
             name: data.makkahHotel.name,
             city: 'makkah'
@@ -138,10 +129,29 @@ exports.createPackage = catchAsync(async (req, res) => {
                 rating: data.makkahHotel.rating || 0
             });
         }
-        // Store the hotel reference AND keep the nights from the request
         data.makkahHotel = {
             ...hotel.toObject(),
-            nights: data.makkahHotel.nights || 0  // ← CRITICAL: preserve nights
+            nights: data.makkahHotel.nights || 0
+        };
+    }
+
+    // Handle Makkah Return Hotel (if provided)
+    if (data.makkahReturnHotel && data.makkahReturnHotel.name) {
+        let hotel = await Hotel.findOne({
+            name: data.makkahReturnHotel.name,
+            city: 'makkah'
+        });
+        if (!hotel) {
+            hotel = await Hotel.create({
+                name: data.makkahReturnHotel.name,
+                city: 'makkah',
+                distance: data.makkahReturnHotel.distance || '',
+                rating: data.makkahReturnHotel.rating || 0
+            });
+        }
+        data.makkahReturnHotel = {
+            ...hotel.toObject(),
+            nights: data.makkahReturnHotel.nights || 0
         };
     }
 
@@ -160,7 +170,7 @@ exports.createPackage = catchAsync(async (req, res) => {
         }
         data.madinahHotel = {
             ...hotel.toObject(),
-            nights: data.madinahHotel.nights || 0  // ← CRITICAL: preserve nights
+            nights: data.madinahHotel.nights || 0
         };
     }
 
@@ -170,6 +180,7 @@ exports.createPackage = catchAsync(async (req, res) => {
 
     res.status(201).json({ success: true, data: pkg });
 });
+
 /**
  * PUT /api/umrah/packages/:id
  * Update an Umrah package (admin only)
@@ -195,7 +206,26 @@ exports.updatePackage = catchAsync(async (req, res) => {
         }
         data.makkahHotel = {
             ...hotel.toObject(),
-            nights: data.makkahHotel.nights || 0  // ← CRITICAL: preserve nights
+            nights: data.makkahHotel.nights || 0
+        };
+    }
+
+    if (data.makkahReturnHotel && data.makkahReturnHotel.name) {
+        let hotel = await Hotel.findOne({
+            name: data.makkahReturnHotel.name,
+            city: 'makkah'
+        });
+        if (!hotel) {
+            hotel = await Hotel.create({
+                name: data.makkahReturnHotel.name,
+                city: 'makkah',
+                distance: data.makkahReturnHotel.distance || '',
+                rating: data.makkahReturnHotel.rating || 0
+            });
+        }
+        data.makkahReturnHotel = {
+            ...hotel.toObject(),
+            nights: data.makkahReturnHotel.nights || 0
         };
     }
 
@@ -214,7 +244,7 @@ exports.updatePackage = catchAsync(async (req, res) => {
         }
         data.madinahHotel = {
             ...hotel.toObject(),
-            nights: data.madinahHotel.nights || 0  // ← CRITICAL: preserve nights
+            nights: data.madinahHotel.nights || 0
         };
     }
 
@@ -281,7 +311,8 @@ exports.createBooking = catchAsync(async (req, res) => {
         passengers,
         roomType,
         customerDetails,
-        specialRequests
+        specialRequests,
+        ziyaratEnabled = false // ✨ NEW: Ziyarat option
     } = req.body;
 
     if (!packageId) throw AppError.badRequest('Package ID is required');
@@ -299,10 +330,17 @@ exports.createBooking = catchAsync(async (req, res) => {
     const childCount = passengers.filter(p => p.type === 'child').length;
     const infantCount = passengers.filter(p => p.type === 'infant').length;
 
-    const adultTotal = adultCount * sharingPrice;
-    const childTotal = childCount * (pkg.childWithoutBedPrice || 0);
-    const infantTotal = infantCount * (pkg.infantPrice || 0);
-    const totalAmount = adultTotal + childTotal + infantTotal;
+    let adultTotal = adultCount * sharingPrice;
+    let childTotal = childCount * (pkg.childWithoutBedPrice || 0);
+    let infantTotal = infantCount * (pkg.infantPrice || 0);
+    
+    // ✨ NEW: Add Ziyarat price if enabled
+    let ziyaratTotal = 0;
+    if (ziyaratEnabled && pkg.ziyaratEnabled && pkg.ziyaratPrice > 0) {
+        ziyaratTotal = pkg.ziyaratPrice;
+    }
+    
+    const totalAmount = adultTotal + childTotal + infantTotal + ziyaratTotal;
 
     // Create booking
     const booking = await UmrahBooking.create({
@@ -329,7 +367,10 @@ exports.createBooking = catchAsync(async (req, res) => {
         },
         specialRequests: specialRequests || '',
         status: 'pending',
-        paymentStatus: 'unpaid'
+        paymentStatus: 'unpaid',
+        // ✨ NEW: Store ziyarat selection
+        ziyaratEnabled: ziyaratEnabled || false,
+        ziyaratPrice: ziyaratTotal || 0
     });
 
     // Notify admins
@@ -338,7 +379,8 @@ exports.createBooking = catchAsync(async (req, res) => {
         await Notification.insertMany(admins.map(admin => ({
             user: admin._id,
             title: 'New Umrah Booking',
-            message: `New Umrah booking ${booking.bookingReference} created by ${customerDetails?.name || req.user.name}`,
+            message: `New Umrah booking ${booking.bookingReference} created by ${customerDetails?.name || req.user.name}` +
+                (ziyaratEnabled ? ' (with Ziyarat)' : ''),
             type: 'booking',
             priority: 'high',
             relatedBooking: booking._id,
@@ -401,7 +443,6 @@ exports.getBooking = catchAsync(async (req, res) => {
 
     if (!booking) throw AppError.notFound('Booking not found');
 
-    // Check authorization
     const isOwner = String(booking.user._id) === String(req.user._id);
     if (!isOwner && req.user.role !== 'admin') {
         throw AppError.forbidden('You do not have permission to view this booking');
