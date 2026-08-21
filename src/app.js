@@ -74,7 +74,26 @@ if (!config.isProd) app.use(morgan('dev'));
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', environment: config.env });
 });
-
+// --- Root route - just a friendly message ----------------------------------
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Rohan Travels API is running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      flights: '/api/flights',
+      bookings: '/api/bookings',
+      umrah: '/api/umrah',
+      users: '/api/users',
+      settings: '/api/settings',
+      dashboard: '/api/dashboard',
+      ledger: '/api/ledger',
+      notifications: '/api/notifications'
+    },
+    documentation: 'See /api/health for service status'
+  });
+});
 // ============================================
 // IMPORT ROUTES
 // ============================================
