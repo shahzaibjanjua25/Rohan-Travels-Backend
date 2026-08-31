@@ -108,7 +108,6 @@ const flightSchema = new mongoose.Schema(
     flightNumber: {
       type: String,
       required: [true, 'Flight number is required'],
-      unique: true,
       uppercase: true,
       trim: true,
       match: [/^[A-Z0-9]{2}\d{1,4}$/, 'Flight number looks like AA100 or BA1326'],
@@ -171,6 +170,8 @@ const flightSchema = new mongoose.Schema(
     baggageAllowance: {
       cabinKg: { type: Number, default: 7, min: 0 },
       checkedKg: { type: Number, default: 23, min: 0 },
+      // ✨ NEW: Return baggage for round trips
+      returnCheckedKg: { type: Number, default: 0, min: 0 },
     },
 
     images: [{ url: String, publicId: String }],

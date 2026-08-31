@@ -77,8 +77,8 @@ exports.getFlight = catchAsync(async (req, res) => {
 
 /** POST /api/flights — admin */
 exports.createFlight = catchAsync(async (req, res) => {
-  const existing = await Flight.findOne({ flightNumber: req.body.flightNumber });
-  if (existing) throw AppError.conflict(`Flight ${req.body.flightNumber} already exists`);
+  // const existing = await Flight.findOne({ flightNumber: req.body.flightNumber });
+  // if (existing) throw AppError.conflict(`Flight ${req.body.flightNumber} already exists`);
 
   // Seed availability from capacity when the caller omits it.
   const payload = { ...req.body };

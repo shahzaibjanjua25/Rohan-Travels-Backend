@@ -195,6 +195,8 @@ const createFlightRules = [
     .withMessage(`status must be one of: ${STATUSES.join(', ')}`),
   body('baggageAllowance.cabinKg').optional().isFloat({ min: 0, max: 100 }).toFloat(),
   body('baggageAllowance.checkedKg').optional().isFloat({ min: 0, max: 100 }).toFloat(),
+  // ✨ NEW: Return baggage validation
+  body('baggageAllowance.returnCheckedKg').optional().isFloat({ min: 0, max: 100 }).toFloat(),
   body('isActive').optional().isBoolean().toBoolean(),
 
   // Reject unknown or server-owned keys rather than silently dropping them —
